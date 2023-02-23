@@ -1,19 +1,19 @@
 package utils
 
 import (
-	"database/sql"
-	_ "github.com/go-sql-driver/mysql"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
 )
 
 // ConnectToDB
 // This function is used to connect to database with connection string
-func ConnectToDB() (*sql.DB, error) {
+func ConnectToDB() (*gorm.DB, error) {
 	// Get connection string from environment variable
 	connectionString := GetEnvVariable("DATABASE_URL")
 
-	// Initiate connection to mysql server using connection string
-	db, err := sql.Open(`mysql`, connectionString)
+	// Open database connection
+	db, err := gorm.Open(mysql.Open(connectionString), &gorm.Config{})
 
-	// Return the error if any
+	// Return database instance and the error if any
 	return db, err
 }
