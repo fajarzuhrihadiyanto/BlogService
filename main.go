@@ -28,10 +28,13 @@ func main() {
 	})
 
 	userRepository := repositories.NewUserRepository(db)
+	articleRepository := repositories.NewArticleRepository(db)
 
 	authUsecase := usecases.NewAuthUsecase(userRepository)
+	articleUsecase := usecases.NewArticleUsecase(userRepository, articleRepository)
 
 	handlers.NewAuthHandler(e, authUsecase)
+	handlers.NewArticleHandler(e, articleUsecase)
 
 	err = e.Start(":8000")
 	if err != nil {
