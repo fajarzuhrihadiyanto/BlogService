@@ -165,7 +165,7 @@ func (handler ArticleHandler) Update(ctx echo.Context) error {
 		})
 	}
 
-	body := new(models.ArticleUpdate)
+	body := new(models.Article)
 	err = ctx.Bind(body)
 	if err != nil {
 		log.Println(err)

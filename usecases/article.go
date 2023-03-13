@@ -40,7 +40,14 @@ func (a ArticleUsecase) GetById(id uint) (*models.Article, *echo.HTTPError) {
 }
 
 func (a ArticleUsecase) Add(userId uint, title string, content string) (*models.Article, *echo.HTTPError) {
-	article, err := a.articleRepository.Add(userId, title, content)
+
+	user, err := a.userRepository.GetById(userId)
+	if err != nil {
+		log.Println(err)
+		return nil, constants.ErrorInternalServer
+	}
+
+	article, err := a.articleRepository.Add(user, title, content)
 	if err != nil {
 		log.Println(err)
 		return nil, constants.ErrorInternalServer
@@ -58,7 +65,7 @@ func (a ArticleUsecase) Update(userId uint, articleId uint, title string, conten
 		return nil, constants.ErrorNotFound
 	}
 
-	if article.AuthorId != userId {
+	if article.Author.ID != userId {
 		return nil, constants.ErrorUnauthorized
 	}
 
@@ -88,7 +95,7 @@ func (a ArticleUsecase) Delete(userId uint, articleId uint) *echo.HTTPError {
 		return constants.ErrorNotFound
 	}
 
-	if article.AuthorId != userId {
+	if article.Author.ID != userId {
 		return constants.ErrorUnauthorized
 	}
 

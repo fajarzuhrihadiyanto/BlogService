@@ -15,14 +15,14 @@ type ArticleRepository struct {
 }
 
 func (a ArticleRepository) Fetch(limit uint, orderColumn string, orderType string, where string) (*[]models.Article, error) {
-	var article []models.Article
+	var articles []models.Article
 	result := a.DB
 
 	if where != "" {
 		result = result.Where(where)
 	}
 
-	result = result.Order(fmt.Sprintf("%v %v", orderColumn, orderType)).Limit(int(limit)).Find(&article)
+	result = result.Order(fmt.Sprintf("%v %v", orderColumn, orderType)).Limit(int(limit)).Find(&articles)
 
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
@@ -32,7 +32,26 @@ func (a ArticleRepository) Fetch(limit uint, orderColumn string, orderType strin
 		log.Println(result.Error)
 		return nil, result.Error
 	}
-	return &article, nil
+
+	// Start association mode
+	a.DB.Model(&articles).Association("Author")
+
+	for idx, _ := range articles {
+		err := a.DB.Model(&articles[idx]).Association("Author").Find(&articles[idx].Author)
+
+		//Check if there is an error
+		if err != nil {
+
+			// Check if record not found
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return nil, nil
+			}
+
+			log.Println(err)
+			return nil, err
+		}
+	}
+	return &articles, nil
 }
 
 func (a ArticleRepository) GetById(id uint) (*models.Article, error) {
@@ -52,12 +71,29 @@ func (a ArticleRepository) GetById(id uint) (*models.Article, error) {
 		return nil, result.Error
 	}
 
+	// Start association mode
+	a.DB.Model(&article).Association("Author")
+
+	err := a.DB.Model(&article).Association("Author").Find(&article.Author)
+
+	//Check if there is an error
+	if err != nil {
+
+		// Check if record not found
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+
+		log.Println(err)
+		return nil, err
+	}
+
 	return &article, nil
 }
 
-func (a ArticleRepository) Add(authorId uint, title string, content string) (*models.Article, error) {
+func (a ArticleRepository) Add(author *models.User, title string, content string) (*models.Article, error) {
 	article := models.Article{
-		AuthorId:  authorId,
+		Author:    *author,
 		Title:     title,
 		Content:   content,
 		CreatedAt: time.Now(),
