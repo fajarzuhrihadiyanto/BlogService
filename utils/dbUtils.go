@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"MyBlog/models"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
@@ -13,6 +14,8 @@ func ConnectToDB() (*gorm.DB, error) {
 
 	// Open database connection
 	db, err := gorm.Open(mysql.Open(connectionString), &gorm.Config{})
+
+	err = db.AutoMigrate(&models.User{}, &models.Article{})
 
 	// Return database instance and the error if any
 	return db, err
