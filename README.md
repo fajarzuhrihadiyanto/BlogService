@@ -157,6 +157,38 @@ request field
 }
 ```
 
+success response 201
+```json
+{
+    "Message": "Article Created",
+    "Data": {
+        "id": 2,
+        "author": {
+            "id": 4,
+            "email": "test@mail.com",
+            "password": "$2a$14$tgmMlKvD2aHevracnG4Ob.1CvXqjY6.PHUQZC63iZxc1T4o/R0AvO",
+            "name": "John Doe",
+            "created_at": "2023-03-13T10:32:11+07:00",
+            "updated_at": "2023-03-13T10:32:10.676+07:00"
+        },
+        "title": "Article 2",
+        "content": "Lorem ipsum dolor sit amet. conseqtetur adipiscing elit",
+        "created_at": "2023-03-13T13:59:44.5056978+07:00",
+        "updated_at": "2023-03-13T13:59:44.5056978+07:00"
+    },
+    "Errors": null
+}
+```
+
+unauthorized error 401
+```json
+{
+    "Message": "Unauthorized",
+    "Data": null,
+    "Errors": null
+}
+```
+
 ### Update article
 PUT `/article/:id`
 
@@ -171,8 +203,76 @@ request field
 }
 ```
 
+success response 200
+```json
+{
+    "Message": "Article updated",
+    "Data": {
+        "id": 2,
+        "author": {
+            "id": 4,
+            "email": "test@mail.com",
+            "password": "$2a$14$tgmMlKvD2aHevracnG4Ob.1CvXqjY6.PHUQZC63iZxc1T4o/R0AvO",
+            "name": "John Doe",
+            "created_at": "2023-03-13T10:32:11+07:00",
+            "updated_at": "2023-03-13T10:32:10.676+07:00"
+        },
+        "title": "This is Article 2",
+        "content": "The quick brown fox jumps over the lazy dog.",
+        "created_at": "2023-03-13T13:59:45+07:00",
+        "updated_at": "2023-03-13T14:08:49.44+07:00"
+    },
+    "Errors": null
+}
+```
+
+unauthorized error 401
+```json
+{
+    "Message": "Unauthorized",
+    "Data": null,
+    "Errors": null
+}
+```
+
+not found error 404
+```json
+{
+    "Message": "Not Found",
+    "Data": null,
+    "Errors": null
+}
+```
+
 ### Delete article
 DELETE `/article/:id`
 
 params :
 - id:int = id of the article
+
+success reponse 200
+```json
+{
+    "Message": "Article deleted",
+    "Data": null,
+    "Errors": null
+}
+```
+
+unauthorized error 401
+```json
+{
+    "Message": "Unauthorized",
+    "Data": null,
+    "Errors": null
+}
+```
+
+not found error 404
+```json
+{
+    "Message": "Not Found",
+    "Data": null,
+    "Errors": null
+}
+```
