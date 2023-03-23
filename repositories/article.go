@@ -18,6 +18,8 @@ func (a ArticleRepository) Fetch(limit uint, orderColumn string, orderType strin
 	var articles []models.Article
 	result := a.DB
 
+	result = result.Select("users.name, articles.*").Joins("INNER JOIN users ON users.id = articles.author_id")
+
 	if where != "" {
 		result = result.Where(where)
 	}
@@ -34,30 +36,30 @@ func (a ArticleRepository) Fetch(limit uint, orderColumn string, orderType strin
 	}
 
 	// Start association mode
-	a.DB.Model(&articles).Association("Author")
+	//a.DB.Model(&articles).Association("Author")
 
-	for idx, _ := range articles {
-		err := a.DB.Model(&articles[idx]).Association("Author").Find(&articles[idx].Author)
-
-		//Check if there is an error
-		if err != nil {
-
-			// Check if record not found
-			if errors.Is(err, gorm.ErrRecordNotFound) {
-				return nil, nil
-			}
-
-			log.Println(err)
-			return nil, err
-		}
-	}
+	//for idx, _ := range articles {
+	//	err := a.DB.Model(&articles[idx]).Association("Author").Find(&articles[idx].Author)
+	//
+	//	//Check if there is an error
+	//	if err != nil {
+	//
+	//		// Check if record not found
+	//		if errors.Is(err, gorm.ErrRecordNotFound) {
+	//			return nil, nil
+	//		}
+	//
+	//		log.Println(err)
+	//		return nil, err
+	//	}
+	//}
 	return &articles, nil
 }
 
 func (a ArticleRepository) GetById(id uint) (*models.Article, error) {
 	// Get article by id
 	var article models.Article
-	result := a.DB.First(&article, id)
+	result := a.DB.Joins("INNER JOIN users ON users.id = articles.author_id").First(&article, id)
 
 	// Check if there is an error
 	if result.Error != nil {
@@ -72,28 +74,28 @@ func (a ArticleRepository) GetById(id uint) (*models.Article, error) {
 	}
 
 	// Start association mode
-	a.DB.Model(&article).Association("Author")
+	//a.DB.Model(&article).Association("Author")
 
-	err := a.DB.Model(&article).Association("Author").Find(&article.Author)
+	//err := a.DB.Model(&article).Association("Author").Find(&article.Author)
 
 	//Check if there is an error
-	if err != nil {
-
-		// Check if record not found
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, nil
-		}
-
-		log.Println(err)
-		return nil, err
-	}
+	//if err != nil {
+	//
+	//	// Check if record not found
+	//	if errors.Is(err, gorm.ErrRecordNotFound) {
+	//		return nil, nil
+	//	}
+	//
+	//	log.Println(err)
+	//	return nil, err
+	//}
 
 	return &article, nil
 }
 
-func (a ArticleRepository) Add(author *models.User, title string, content string) (*models.Article, error) {
+func (a ArticleRepository) Add(authorId uint, title string, content string) (*models.Article, error) {
 	article := models.Article{
-		Author:    *author,
+		AuthorId:  authorId,
 		Title:     title,
 		Content:   content,
 		CreatedAt: time.Now(),
