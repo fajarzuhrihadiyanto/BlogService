@@ -16,7 +16,7 @@ type ArticleRepository struct {
 
 func (a ArticleRepository) Fetch(limit uint, orderColumn string, orderType string, where string) (*[]models.Article, error) {
 	var articles []models.Article
-	result := a.DB
+	result := a.DB.Model(articles)
 
 	result = result.Select("users.name, articles.*").Joins("INNER JOIN users ON users.id = articles.author_id")
 
@@ -24,7 +24,7 @@ func (a ArticleRepository) Fetch(limit uint, orderColumn string, orderType strin
 		result = result.Where(where)
 	}
 
-	result = result.Order(fmt.Sprintf("%v %v", orderColumn, orderType)).Limit(int(limit)).Find(&articles)
+	result = result.Order(fmt.Sprintf("%v %v", orderColumn, orderType)).Limit(int(limit)).Scan(&articles)
 
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
