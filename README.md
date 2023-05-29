@@ -2,6 +2,12 @@
 
 link development : https://blog-service-3h0p.onrender.com/
 
+## How to Run Service
+- clone this repository `git clone https://github.com/fajarzuhrihadiyanto/BlogService.git`
+- install go dependecies `go install`
+- build project `go build MyBlog`
+- run MyBlog.exe
+
 ## Authentication
 
 ### Register

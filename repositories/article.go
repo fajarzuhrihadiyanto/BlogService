@@ -18,11 +18,15 @@ func (a ArticleRepository) Fetch(limit uint, orderColumn string, orderType strin
 	var articles []models.Article
 	result := a.DB
 
+	query := "SELECT articles.*, users.name AS author_name FROM articles INNER JOIN users ON users.id = articles.author_id"
+
 	if where != "" {
-		result = result.Where(where)
+		query = fmt.Sprintf("%v WHERE %v", query, where)
 	}
 
-	result = result.Order(fmt.Sprintf("%v %v", orderColumn, orderType)).Limit(int(limit)).Find(&articles)
+	query = fmt.Sprintf("%v ORDER BY %v %v LIMIT %v", query, orderColumn, orderType, limit)
+
+	result = result.Raw(query).Scan(&articles)
 
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
@@ -33,31 +37,13 @@ func (a ArticleRepository) Fetch(limit uint, orderColumn string, orderType strin
 		return nil, result.Error
 	}
 
-	// Start association mode
-	a.DB.Model(&articles).Association("Author")
-
-	for idx, _ := range articles {
-		err := a.DB.Model(&articles[idx]).Association("Author").Find(&articles[idx].Author)
-
-		//Check if there is an error
-		if err != nil {
-
-			// Check if record not found
-			if errors.Is(err, gorm.ErrRecordNotFound) {
-				return nil, nil
-			}
-
-			log.Println(err)
-			return nil, err
-		}
-	}
 	return &articles, nil
 }
 
 func (a ArticleRepository) GetById(id uint) (*models.Article, error) {
 	// Get article by id
 	var article models.Article
-	result := a.DB.First(&article, id)
+	result := a.DB.Select("articles.*, users.name AS author_name").Joins("INNER JOIN users ON users.id = articles.author_id").First(&article, id).Scan(&article)
 
 	// Check if there is an error
 	if result.Error != nil {
@@ -71,29 +57,12 @@ func (a ArticleRepository) GetById(id uint) (*models.Article, error) {
 		return nil, result.Error
 	}
 
-	// Start association mode
-	a.DB.Model(&article).Association("Author")
-
-	err := a.DB.Model(&article).Association("Author").Find(&article.Author)
-
-	//Check if there is an error
-	if err != nil {
-
-		// Check if record not found
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, nil
-		}
-
-		log.Println(err)
-		return nil, err
-	}
-
 	return &article, nil
 }
 
-func (a ArticleRepository) Add(author *models.User, title string, content string) (*models.Article, error) {
+func (a ArticleRepository) Add(authorId uint, title string, content string) (*models.Article, error) {
 	article := models.Article{
-		Author:    *author,
+		AuthorId:  authorId,
 		Title:     title,
 		Content:   content,
 		CreatedAt: time.Now(),
